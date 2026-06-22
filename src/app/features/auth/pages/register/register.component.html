@@ -1,0 +1,154 @@
+
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 py-12 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+  <div class="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+
+  <div class="w-full max-w-xl relative">
+    <!-- Brand Logo/Name -->
+    <div class="text-center mb-8 space-y-3">
+      <div class="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center p-1.5 shadow-xl shadow-slate-100 mb-4 cursor-pointer hover:scale-105 transition-transform border border-slate-100" routerLink="/home">
+        <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer Ring -->
+          <circle cx="50" cy="50" r="48" fill="#0b7e3f" />
+          <circle cx="50" cy="50" r="40" fill="white" />
+          
+          <!-- Middle Figure -->
+          <circle cx="50" cy="24" r="5" fill="#0b7e3f" />
+          <path d="M50 32 L50 82" stroke="#0b7e3f" stroke-width="8" stroke-linecap="round" />
+          
+          <!-- Swoosh Line -->
+          <path d="M22 45 C20 30 50 20 82 45 C95 60 75 80 50 85 C30 85 10 70 15 50" fill="none" stroke="#8dc63f" stroke-width="6" stroke-linecap="round" />
+          
+          <!-- Side Figures -->
+          <circle cx="36" cy="48" r="4" fill="#0b7e3f" />
+          <path d="M36 55 L36 75" stroke="#0b7e3f" stroke-width="6" stroke-linecap="round" />
+          
+          <circle cx="64" cy="48" r="4" fill="#0b7e3f" />
+          <path d="M64 55 L64 75" stroke="#0b7e3f" stroke-width="6" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="space-y-1">
+        <span class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1">République Tunisienne</span>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase">Portail National CNSS</h1>
+        <span class="block text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">Sécurité Sociale Digitale</span>
+      </div>
+    </div>
+
+    <!-- Register Card -->
+    <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-100">
+        <div class="flex-1 py-4 text-center text-xs font-black uppercase tracking-widest text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/30 font-sans">S'inscrire</div>
+        <a routerLink="/login" class="flex-1 py-4 text-center text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50/50 transition-all">Se connecter</a>
+      </div>
+
+      <div class="p-8 md:p-10">
+        @if(successMessage()) {
+          <div class="text-center space-y-6 py-10">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full mx-auto flex items-center justify-center shadow-inner">
+              <mat-icon class="text-4xl">check_circle</mat-icon>
+            </div>
+            <div class="space-y-2">
+              <h2 class="text-2xl font-black text-slate-800 tracking-tight">Bienvenue parmi nous !</h2>
+              <p class="text-slate-500 font-medium">{{ successMessage() }}</p>
+            </div>
+            <button routerLink="/login" class="px-8 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-emerald-600 transition-all">
+              Aller à la connexion
+            </button>
+          </div>
+        } @else {
+          <div class="space-y-8">
+            <div class="space-y-1">
+              <h2 class="text-xl font-black text-slate-800 tracking-tight">Créer votre compte citoyen</h2>
+              <p class="text-sm font-medium text-slate-400">Rejoignez le portail numérique pour une gestion simplifiée.</p>
+            </div>
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- First Name -->
+                <div class="space-y-1 group">
+                  <label for="prenom" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Prénom</label>
+                  <input type="text" id="prenom" formControlName="prenom" placeholder="Ex: Ahmed" class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('prenom')?.invalid && registerForm.get('prenom')?.touched">
+                </div>
+                <!-- Last Name -->
+                <div class="space-y-1 group">
+                  <label for="nom" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Nom</label>
+                  <input type="text" id="nom" formControlName="nom" placeholder="Ex: Ben Mansour" class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('nom')?.invalid && registerForm.get('nom')?.touched">
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="space-y-1 group">
+                <label for="email" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Adresse E-mail</label>
+                <div class="relative">
+                  <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm">mail_outline</mat-icon>
+                  <input type="email" id="email" formControlName="email" placeholder="nom@provider.tn" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                </div>
+              </div>
+
+              <!-- Password -->
+              <div class="space-y-1 group">
+                <div class="flex justify-between items-center">
+                  <label for="password" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Mot de passe</label>
+                  <span class="text-[9px] font-bold text-slate-300">Min. 8 car. (A, a, 1, #)</span>
+                </div>
+                <div class="relative">
+                  <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm">lock_open</mat-icon>
+                  <input type="password" id="password" formControlName="password" placeholder="••••••••" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                </div>
+                @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                  <p class="text-[9px] text-red-500 font-bold mt-1">Exigé: 8+ car., Majuscule, Chiffre, Caractère spécial (&#64;, !, #, ...)</p>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Social ID -->
+                <div class="space-y-1 group">
+                  <label for="numeroAssure" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">N° Assuré Social</label>
+                  <input type="text" id="numeroAssure" formControlName="numeroAssure" placeholder="10 chiffres" class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 font-mono outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('numeroAssure')?.invalid && registerForm.get('numeroAssure')?.touched">
+                </div>
+                <!-- CIN -->
+                <div class="space-y-1 group">
+                  <label for="cin" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Carte d'Identité (CIN)</label>
+                  <input type="text" id="cin" formControlName="cin" placeholder="8 chiffres" class="w-full px-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 font-mono outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('cin')?.invalid && registerForm.get('cin')?.touched">
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="space-y-1 group">
+                <label for="telephone" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">N° Téléphone</label>
+                <div class="relative">
+                  <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 text-sm">phone_iphone</mat-icon>
+                  <input type="tel" id="telephone" formControlName="telephone" placeholder="+216 -- --- ---" class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-2 border-slate-50 rounded-xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="registerForm.get('telephone')?.invalid && registerForm.get('telephone')?.touched">
+                </div>
+              </div>
+
+              @if(error()) {
+                <div class="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600">
+                  <mat-icon class="text-sm">error_outline</mat-icon>
+                  <span class="text-xs font-bold">{{ error() }}</span>
+                </div>
+              }
+
+              <button type="submit" [disabled]="registerForm.invalid || isLoading()" class="w-full py-4 bg-[#0b7e3f] text-white font-bold rounded-xl hover:bg-[#086332] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl flex items-center justify-center gap-2">
+                @if(isLoading()) {
+                  <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span class="uppercase tracking-widest text-xs font-black">VÉRIFICATION...</span>
+                } @else {
+                  <span class="uppercase tracking-widest text-sm font-black">S'inscrire au portail</span>
+                }
+              </button>
+            </form>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Help Footer -->
+    <div class="mt-8 text-center text-slate-400">
+      <p class="text-xs font-medium tracking-tight">Déjà inscrit ? Connectez-vous via l'onglet <span class="font-bold text-emerald-600 cursor-pointer" routerLink="/login">Se connecter</span></p>
+    </div>
+  </div>
+</div>

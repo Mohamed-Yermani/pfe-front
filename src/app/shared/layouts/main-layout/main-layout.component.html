@@ -1,0 +1,45 @@
+
+    <div class="flex h-screen bg-gray-100 print:bg-white print:block print:h-auto">
+  <app-sidebar [isOpen]="isSidebarOpen()" class="print:hidden h-screen"></app-sidebar>
+  <div class="flex flex-col flex-1 overflow-hidden print:overflow-visible print:block">
+    <app-header (toggleSidebar)="toggleSidebar()" class="print:hidden"></app-header>
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 print:bg-white print:overflow-visible print:block">
+      <div class="container mx-auto px-6 py-8 print:p-0 print:m-0 print:max-w-none print:w-full">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+    <app-footer class="print:hidden"></app-footer>
+  </div>
+</div>
+
+<!-- Conteneur flottant pour les alertes de notification en temps réel -->
+<div class="fixed top-20 right-6 z-[9999] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+  @for (toast of websocketService.activeToasts(); track toast) {
+    <div class="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-100 p-4 pointer-events-auto overflow-hidden transition-all duration-300 relative group flex gap-3 animate-in slide-in-from-right duration-300">
+      <!-- Indicateur de couleur latéral -->
+      <div [class]="getToastBarClass(toast.type)" class="absolute top-0 bottom-0 left-0 w-1.5"></div>
+      
+      <!-- Icône avec arrière-plan thématique -->
+      <div [class]="getToastIconBg(toast.type)" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+        <mat-icon [class]="getToastIconColor(toast.type)" class="text-lg">{{ getToastMatIcon(toast.type) }}</mat-icon>
+      </div>
+
+      <!-- Contenu textuel -->
+      <div class="flex-1 min-w-0">
+        <h4 class="font-black text-slate-900 text-xs uppercase tracking-tight truncate">{{ toast.titre }}</h4>
+        <p class="text-[11px] text-slate-500 font-medium leading-normal mt-1 line-clamp-3">{{ toast.message }}</p>
+        @if (toast.typeAvantage) {
+          <span class="inline-flex mt-2 items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600 border border-indigo-100">
+            {{ toast.typeAvantage }}
+          </span>
+        }
+      </div>
+
+      <!-- Bouton Fermer -->
+      <button (click)="websocketService.removeToast(toast)" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg shrink-0 h-fit transition-colors pointer-events-auto">
+        <mat-icon class="text-sm">close</mat-icon>
+      </button>
+    </div>
+  }
+</div>
+

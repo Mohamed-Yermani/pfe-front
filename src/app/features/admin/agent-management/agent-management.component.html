@@ -1,0 +1,101 @@
+
+<section class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-gray-800">Gestion des Agents CNSS</h2>
+        <button (click)="openCreateModal()" class="px-4 py-2 font-medium tracking-wide text-white capitalize transition-colors duration-200 transform bg-blue-600 rounded-md hover:bg-blue-500 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-80">
+            <span class="mx-1">Créer un Agent</span>
+        </button>
+    </div>
+
+    <!-- Agents table -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Nom Complet</th>
+                        <th scope="col" class="px-6 py-3">Email</th>
+                        <th scope="col" class="px-6 py-3">N° Assuré</th>
+                        <th scope="col" class="px-6 py-3">Statut</th>
+                        <th scope="col" class="px-6 py-3 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (agent of agents(); track agent.id) {
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            {{ agent.prenom }} {{ agent.nom }}
+                        </th>
+                        <td class="px-6 py-4">{{ agent.email }}</td>
+                        <td class="px-6 py-4">{{ agent.numeroAssure }}</td>
+                        <td class="px-6 py-4">
+                            <span [class]="'px-2 py-1 text-xs font-semibold rounded-full ' + (agent.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')">
+                                {{ agent.enabled ? 'Actif' : 'Inactif' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 flex items-center justify-center space-x-2">
+                            <button (click)="openEditModal(agent)" class="p-2 text-blue-600 hover:text-blue-800">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"></path></svg>
+                            </button>
+                            @if (agent.enabled) {
+                                <button (click)="deactivateAgent(agent.id)" class="p-2 text-red-600 hover:text-red-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                </button>
+                            } @else {
+                                <button (click)="reactivateAgent(agent.id)" class="p-2 text-green-600 hover:text-green-800">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                    } @empty {
+                        <tr class="bg-white border-b">
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                Aucun agent trouvé.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- Agent Modal -->
+@if (isModalOpen()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative" (click)="$event.stopPropagation()">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">{{ editingAgent() ? 'Modifier l\'Agent' : 'Créer un Agent' }}</h3>
+            <button (click)="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <form [formGroup]="agentForm" (ngSubmit)="onFormSubmit()">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input formControlName="prenom" type="text" placeholder="Prénom" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input formControlName="nom" type="text" placeholder="Nom" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mt-4">
+                    <input formControlName="email" type="email" placeholder="Email" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <input formControlName="cin" type="text" placeholder="CIN" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input formControlName="numeroAssure" type="text" placeholder="N° Assuré" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mt-4">
+                    <input formControlName="telephone" type="text" placeholder="Téléphone" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                @if (!editingAgent()) {
+                    <div class="mt-4">
+                        <input formControlName="password" type="password" placeholder="Mot de passe" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                }
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" (click)="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Annuler</button>
+                    <button type="submit" [disabled]="agentForm.invalid" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300">
+                        {{ editingAgent() ? 'Enregistrer' : 'Créer' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

@@ -1,0 +1,136 @@
+<header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between relative z-30">
+
+  <!-- Zone gauche : toggle sidebar + titre -->
+  <div class="flex items-center gap-4">
+    <button
+      (click)="onToggleSidebar()"
+      class="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+      title="Afficher/Masquer le menu" aria-label="Afficher/Masquer le menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <h1 class="text-sm font-black text-slate-900 uppercase tracking-wide hidden sm:block">
+      Espace Conseil &amp; Gestion des Avantages
+    </h1>
+  </div>
+
+  <!-- Zone droite : notifications + profil -->
+  <div class="flex items-center gap-3">
+
+    <!-- CLOCHE NOTIFICATIONS -->
+    <div class="relative">
+      <button
+        (click)="toggleNotifications()"
+        class="relative w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
+        [matTooltip]="unreadCount() > 0 ? unreadCount() + ' notification(s) non lue(s)' : 'Notifications'"
+        aria-label="Notifications">
+        <mat-icon>{{ unreadCount() > 0 ? 'notifications_active' : 'notifications' }}</mat-icon>
+        @if (unreadCount() > 0) {
+          <span class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center leading-none">
+            {{ unreadCountLabel() }}
+          </span>
+        }
+      </button>
+
+      @if (isNotificationsOpen()) {
+        <div class="absolute right-0 mt-2 w-[380px] max-w-[90vw] bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150 z-[60]">
+
+          <!-- Header du panneau -->
+          <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <span class="text-xs font-black text-slate-900 uppercase tracking-wide">Notifications</span>
+            @if (unreadCount() > 0) {
+              <button (click)="markAllAsRead($event)"
+                      class="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 hover:underline">
+                Tout marquer comme lu
+              </button>
+            }
+          </div>
+
+          <!-- Liste -->
+          <div class="max-h-[400px] overflow-y-auto divide-y divide-slate-50">
+            @for (notif of recentNotifications(); track notif.id) {
+              <button
+                (click)="onNotificationClick(notif)"
+                class="w-full text-left px-4 py-3 flex gap-3 hover:bg-slate-50 transition-colors relative"
+                [ngClass]="{'bg-emerald-50/40': !notif.lue}">
+
+                @if (!notif.lue) {
+                  <span class="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                }
+
+                <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" [class]="colorClassForType(notif.type)">
+                  <mat-icon class="!text-[16px] w-4 h-4 flex items-center justify-center">{{ iconForType(notif.type) }}</mat-icon>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-bold text-slate-900 leading-tight truncate" [class.font-black]="!notif.lue">
+                    {{ notif.titre }}
+                  </p>
+                  <p class="text-[11px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                    {{ notif.message }}
+                  </p>
+                  <p class="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tight">
+                    {{ timeAgo(notif.dateCreation) }}
+                  </p>
+                </div>
+              </button>
+            } @empty {
+              <div class="py-12 flex flex-col items-center text-center px-6">
+                <mat-icon class="text-3xl text-slate-200 mb-2">notifications_none</mat-icon>
+                <p class="text-xs font-bold text-slate-400">Aucune notification pour le moment</p>
+              </div>
+            }
+          </div>
+
+          <!-- Footer -->
+          @if (recentNotifications().length > 0) {
+            <div class="px-4 py-2.5 border-t border-slate-100 bg-slate-50">
+              <button (click)="viewAll()" class="w-full text-center text-[11px] font-black text-slate-700 hover:text-slate-900 uppercase tracking-wide">
+                Voir tout l'historique
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- MENU UTILISATEUR -->
+    <div class="relative">
+      <button (click)="toggleDropdown()"
+              class="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-lg hover:bg-slate-100 transition-all">
+        <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-black">
+          {{ userInitials() }}
+        </div>
+        <div class="hidden md:block text-left">
+          <p class="text-xs font-bold text-slate-900 leading-tight">
+            {{ authService.currentUser()?.prenom }} {{ authService.currentUser()?.nom }}
+          </p>
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight leading-tight">
+            {{ primaryRole() }}
+          </p>
+        </div>
+        <mat-icon class="text-slate-400 !text-[18px] w-[18px] h-[18px]">expand_more</mat-icon>
+      </button>
+
+      @if (isDropdownOpen()) {
+        <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-150 z-[60]">
+          <a routerLink="/profil" (click)="closeAllPanels()"
+             class="px-4 py-3 flex items-center gap-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors">
+            <mat-icon class="text-slate-400">person</mat-icon>
+            Mon Profil
+          </a>
+          <div class="border-t border-slate-100"></div>
+          <button (click)="logout()"
+                  class="w-full px-4 py-3 flex items-center gap-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors">
+            <mat-icon class="text-red-500">logout</mat-icon>
+            Déconnexion
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Overlay pour fermer les panneaux au clic en dehors -->
+  @if (isDropdownOpen() || isNotificationsOpen()) {
+    <div class="fixed inset-0 z-50" (click)="closeAllPanels()"></div>
+  }
+</header>

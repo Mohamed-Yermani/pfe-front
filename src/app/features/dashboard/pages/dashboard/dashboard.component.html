@@ -1,0 +1,126 @@
+@if (isAdmin()) {
+  <app-admin-dashboard></app-admin-dashboard>
+} @else {
+  <div class="min-h-screen bg-slate-50">
+    <div class="px-4 py-10 max-w-7xl mx-auto">
+
+      <!-- En-tête institutionnel -->
+      <div class="mb-10 pb-6 border-b border-slate-200">
+        @if (currentUser(); as user) {
+          <div class="flex items-center gap-2 mb-3">
+            <mat-icon class="text-emerald-700" style="font-size:18px;width:18px;height:18px;">verified_user</mat-icon>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+              Espace Citoyen Sécurisé — CNSS
+            </span>
+          </div>
+          <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Tableau de bord</h1>
+          <p class="text-slate-500 mt-1 text-base">
+            Bon retour, <span class="text-slate-900 font-semibold">{{ user.prenom }} {{ user.nom }}</span>
+          </p>
+        }
+      </div>
+
+      <!-- Cartes d'actions -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        @if (isAssure()) {
+          <a routerLink="/dossiers"
+             matTooltip="Consulter l'historique et le statut de vos dossiers"
+             matTooltipPosition="above"
+             class="group bg-white p-6 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition-all flex flex-col">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center mb-5">
+              <mat-icon>account_balance_wallet</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Dépôt de dossiers</h3>
+            <p class="text-slate-500 text-sm leading-relaxed mb-5 flex-1">
+              Consultez l'historique de vos remboursements et l'état de vos dépôts.
+            </p>
+            <div class="flex items-center gap-2 text-emerald-700 font-semibold text-xs uppercase tracking-wide">
+              Gérer mes dossiers
+              <mat-icon style="font-size:16px;width:16px;height:16px;">arrow_forward</mat-icon>
+            </div>
+          </a>
+
+          <button (click)="downloadForm()"
+                  matTooltip="Télécharger le formulaire CNSS pré-rempli au format PDF"
+                  matTooltipPosition="above"
+                  class="group bg-white p-6 rounded-xl border border-slate-200 hover:border-emerald-600 hover:shadow-md transition-all flex flex-col text-left">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center mb-5">
+              <mat-icon>description</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Formulaire PDF</h3>
+            <p class="text-slate-500 text-sm leading-relaxed mb-5 flex-1">
+              Téléchargez votre formulaire officiel CNSS pré-rempli pour impression.
+            </p>
+            <div class="flex items-center gap-2 text-emerald-700 font-semibold text-xs uppercase tracking-wide">
+              Générer le PDF
+              <mat-icon style="font-size:16px;width:16px;height:16px;">download</mat-icon>
+            </div>
+          </button>
+
+          <a routerLink="/dossiers/nouveau"
+             matTooltip="Remplir une nouvelle demande de prestation en ligne"
+             matTooltipPosition="above"
+             class="group bg-slate-900 p-6 rounded-xl border border-slate-900 hover:shadow-md transition-all flex flex-col">
+            <div class="w-12 h-12 bg-white/10 text-white rounded-lg flex items-center justify-center mb-5">
+              <mat-icon>edit_note</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-1">Saisie en ligne</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-5 flex-1">
+              Remplissez votre demande de prestation directement en ligne.
+            </p>
+            <div class="flex items-center gap-2 text-emerald-400 font-semibold text-xs uppercase tracking-wide">
+              Nouveau dossier
+              <mat-icon style="font-size:16px;width:16px;height:16px;">add_circle</mat-icon>
+            </div>
+          </a>
+        }
+
+        @if (isAgent()) {
+          <a routerLink="/dossiers/validation"
+             matTooltip="Accéder à la file d'attente des dossiers à traiter"
+             matTooltipPosition="above"
+             class="group bg-white p-6 rounded-xl border border-slate-200 hover:border-amber-600 hover:shadow-md transition-all flex flex-col">
+            <div class="w-12 h-12 bg-amber-50 text-amber-700 rounded-lg flex items-center justify-center mb-5">
+              <mat-icon>fact_check</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-1">Validation</h3>
+            <p class="text-slate-500 text-sm leading-relaxed mb-5 flex-1">
+              Accédez à la file d'attente pour traiter et valider les dossiers.
+            </p>
+            <div class="flex items-center gap-2 text-amber-700 font-semibold text-xs uppercase tracking-wide">
+              Traiter les dossiers
+              <mat-icon style="font-size:16px;width:16px;height:16px;">arrow_forward</mat-icon>
+            </div>
+          </a>
+        }
+      </div>
+
+      <!-- Activité récente -->
+      @if (isAssure()) {
+        <div class="mt-14">
+          <div class="flex items-center gap-2 mb-5 pb-3 border-b border-slate-200">
+            <mat-icon class="text-slate-400" style="font-size:20px;width:20px;height:20px;">history</mat-icon>
+            <h2 class="text-lg font-bold text-slate-900">Activité récente</h2>
+          </div>
+
+          <div class="bg-white p-10 rounded-xl border border-slate-200 text-center">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto mb-5">
+              <mat-icon>inventory_2</mat-icon>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Suivez l'état de vos dossiers</h3>
+            <p class="text-slate-500 text-sm leading-relaxed max-w-md mx-auto mb-6">
+              Toutes vos demandes sont archivées et sécurisées. Vous recevrez une notification
+              par SMS et email dès qu'un agent aura traité votre dossier.
+            </p>
+            <a routerLink="/dossiers"
+               class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-700 text-white font-semibold rounded-lg hover:bg-emerald-800 transition-colors text-xs uppercase tracking-wide">
+              Voir mes dossiers
+              <mat-icon style="font-size:16px;width:16px;height:16px;">arrow_forward</mat-icon>
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

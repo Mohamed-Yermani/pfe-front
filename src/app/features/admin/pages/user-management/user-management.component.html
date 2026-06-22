@@ -1,0 +1,42 @@
+<h1 class="text-3xl font-semibold text-gray-800">User Management</h1>
+<div class="mt-8 bg-white p-4 rounded-lg shadow-md">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roles</th>
+          <th scope="col" class="relative px-6 py-3">
+            <span class="sr-only">Actions</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        @for (user of users(); track user.id) {
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm font-medium text-gray-900">{{ user.prenom }} {{ user.nom }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-500">{{ user.email }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            @for(role of user.roles; track role) {
+              <span class="px-2 mr-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    [class.bg-red-100]="role === 'ROLE_ADMIN'" [class.text-red-800]="role === 'ROLE_ADMIN'"
+                    [class.bg-blue-100]="role === 'ROLE_AGENT_CNSS'" [class.text-blue-800]="role === 'ROLE_AGENT_CNSS'"
+                    [class.bg-green-100]="role === 'ROLE_ASSURE'" [class.text-green-800]="role === 'ROLE_ASSURE'">
+                {{ role.replace('ROLE_', '') }}
+              </span>
+            }
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <a [routerLink]="['/admin/user', user.id]" class="text-indigo-600 hover:text-indigo-900">View Details</a>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

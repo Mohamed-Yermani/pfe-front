@@ -1,0 +1,45 @@
+
+<h1 class="text-3xl font-semibold text-gray-800">My Profile</h1>
+<div class="mt-8 bg-white p-8 rounded-lg shadow-md">
+    @if (user(); as currentUser) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="text-gray-600 font-semibold">Prénom</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.prenom }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Nom</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.nom }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Email</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.email }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Numéro d'assuré</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.numeroAssure }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">CIN</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.cin }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Téléphone</label>
+                <p class="mt-2 text-lg text-gray-800">{{ currentUser.telephone }}</p>
+            </div>
+            <div>
+                <label class="text-gray-600 font-semibold">Rôles</label>
+                <p class="mt-2 text-lg text-gray-800 capitalize">{{ getRoleDisplayNames(currentUser.roles) }}</p>
+            </div>
+             <div>
+                <label class="text-gray-600 font-semibold">Status</label>
+                <p class="mt-2 text-lg text-gray-800 capitalize">{{ currentUser.enabled ? 'Activé' : 'Désactivé' }}</p>
+            </div>
+        </div>
+        <div class="mt-8">
+            <a routerLink="/profile/edit" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Edit Profile</a>
+        </div>
+    } @else {
+        <p>Loading user profile...</p>
+    }
+</div>

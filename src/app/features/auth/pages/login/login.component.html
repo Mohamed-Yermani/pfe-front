@@ -1,0 +1,102 @@
+
+<div class="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans selection:bg-emerald-100 selection:text-emerald-900">
+  <div class="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+
+  <div class="w-full max-w-md relative">
+    <!-- Brand Logo/Name -->
+    <div class="text-center mb-8 space-y-3">
+      <div class="w-16 h-16 bg-white rounded-2xl mx-auto flex items-center justify-center p-1.5 shadow-xl shadow-slate-100 mb-4 cursor-pointer hover:scale-105 transition-transform border border-slate-100" routerLink="/home">
+        <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer Ring -->
+          <circle cx="50" cy="50" r="48" fill="#0b7e3f" />
+          <circle cx="50" cy="50" r="40" fill="white" />
+          
+          <!-- Middle Figure -->
+          <circle cx="50" cy="24" r="5" fill="#0b7e3f" />
+          <path d="M50 32 L50 82" stroke="#0b7e3f" stroke-width="8" stroke-linecap="round" />
+          
+          <!-- Swoosh Line -->
+          <path d="M22 45 C20 30 50 20 82 45 C95 60 75 80 50 85 C30 85 10 70 15 50" fill="none" stroke="#8dc63f" stroke-width="6" stroke-linecap="round" />
+          
+          <!-- Side Figures -->
+          <circle cx="36" cy="48" r="4" fill="#0b7e3f" />
+          <path d="M36 55 L36 75" stroke="#0b7e3f" stroke-width="6" stroke-linecap="round" />
+          
+          <circle cx="64" cy="48" r="4" fill="#0b7e3f" />
+          <path d="M64 55 L64 75" stroke="#0b7e3f" stroke-width="6" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="space-y-1">
+        <span class="block text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none mb-1">République Tunisienne</span>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase">Portail National CNSS</h1>
+        <span class="block text-[8px] font-black text-emerald-600 uppercase tracking-widest leading-none">Sécurité Sociale Digitale</span>
+      </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
+      <!-- Tabs -->
+      <div class="flex border-b border-slate-100">
+        <a routerLink="/register" class="flex-1 py-4 text-center text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50/50 transition-all">S'inscrire</a>
+        <div class="flex-1 py-4 text-center text-xs font-black uppercase tracking-widest text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50/30">Se connecter</div>
+      </div>
+
+      <div class="p-8 md:p-10 space-y-8">
+        <div class="space-y-1">
+          <h2 class="text-xl font-black text-slate-800">C'est un plaisir de vous revoir</h2>
+          <p class="text-sm font-medium text-slate-400 tracking-tight">Veuillez entrer vos identifiants pour continuer.</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <div class="space-y-1 group">
+            <label for="email" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Adresse E-mail</label>
+            <div class="relative">
+              <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">mail_outline</mat-icon>
+              <input type="email" id="email" formControlName="email" placeholder="nom@exemple.com" class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" required>
+            </div>
+          </div>
+
+          <div class="space-y-1 group">
+            <label for="password" class="text-[10px] font-black text-slate-400 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">Mot de passe</label>
+            <div class="relative">
+              <mat-icon class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">lock_open</mat-icon>
+              <input type="password" id="password" formControlName="password" placeholder="••••••••" class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-50 rounded-2xl text-sm font-bold text-slate-800 outline-none focus:bg-white focus:border-emerald-600 transition-all placeholder:text-slate-300" [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" required>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" class="w-4 h-4 rounded border-slate-200 text-emerald-600 focus:ring-emerald-500">
+              <span class="text-xs font-bold text-slate-500">Se souvenir de moi</span>
+            </label>
+            <a href="#" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors">Oublié ?</a>
+          </div>
+
+          @if(error()) {
+            <div class="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600">
+              <mat-icon class="text-lg">error_outline</mat-icon>
+              <span class="text-xs font-bold">{{ error() }}</span>
+            </div>
+          }
+
+          <button type="submit" [disabled]="loginForm.invalid || isLoading()" class="w-full py-4 bg-[#0b7e3f] text-white font-bold rounded-xl hover:bg-[#086332] active:scale-[0.95] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl flex items-center justify-center gap-2">
+            @if(isLoading()) {
+              <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="tracking-widest uppercase text-xs font-black">VÉRIFICATION...</span>
+            } @else {
+              <span class="tracking-wider uppercase text-sm font-black">Se connecter au portail</span>
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Help Footer -->
+    <div class="mt-8 text-center text-slate-400">
+      <p class="text-xs font-medium">Besoin d'aide ? Contactez le support technique au <span class="font-bold text-slate-500">1717</span></p>
+    </div>
+  </div>
+</div>
