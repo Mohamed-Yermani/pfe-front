@@ -23,19 +23,30 @@ export class NotificationHistoryComponent {
   constructor() {
     this.notificationService.rafraichirNotifications();
   }
+   
 
+  
   markAllAsRead(): void {
     this.notificationService.marquerToutesLues().subscribe();
   }
 
-  onNotificationClick(notif: AppNotification): void {
-    if (!notif.lue) {
-      this.notificationService.marquerLue(notif.id).subscribe();
-    }
-    if (notif.dossierId) {
-      this.router.navigate(['/dossiers', notif.dossierId]);
-    }
+ onNotificationClick(notif: AppNotification): void {
+  if (!notif.lue) {
+    this.notificationService.marquerLue(notif.id).subscribe();
   }
+
+  if (notif.dossierId) {
+    this.router.navigate(
+      ['/dossiers'],
+      {
+        queryParams: {
+          dossierId: notif.dossierId
+        }
+      }
+    );
+  }
+}
+  
 
   iconFor(type: AppNotification['type']): string {
     switch (type) {

@@ -23,7 +23,10 @@ export class HeaderComponent {
 
   isDropdownOpen = signal(false);
   isNotificationsOpen = signal(false);
-
+  viewAll(): void {
+  this.closeAllPanels();
+  this.router.navigate(['/notifications']);
+}
   // Connecté au vrai flux (API + WebSocket) via NotificationService.notifications$
   notifications = toSignal(this.notificationService.notifications$, { initialValue: [] as AppNotification[] });
 
@@ -92,10 +95,7 @@ export class HeaderComponent {
     this.notificationService.marquerToutesLues().subscribe();
   }
 
-  viewAll(): void {
-    this.isNotificationsOpen.set(false);
-    this.router.navigate(['/notifications']);
-  }
+
 
   iconForType(type: AppNotification['type']): string {
     switch (type) {

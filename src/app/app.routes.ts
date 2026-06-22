@@ -45,7 +45,14 @@ export const APP_ROUTES: Routes = [
         path: 'agent/all-dossiers',
         canActivate: [authGuard],
         loadComponent: () => import('./features/agent/pages/all-dossiers').then(m => m.AllDossiersComponent)
-      }
+      },
+      {
+  path: 'notifications',
+  canActivate: [authGuard],
+  loadComponent: () =>
+    import('./features/notifications/pages/notification-history/notification-history.component')
+      .then(m => m.NotificationHistoryComponent)
+}
     ]
   },
   {
