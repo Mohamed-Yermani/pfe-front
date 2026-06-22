@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { WebsocketService, NotificationPayload } from '../../../core/services/websocket.service';
-import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-notification-toast',
@@ -36,7 +35,6 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class NotificationToastComponent {
   websocketService = inject(WebsocketService);
-  private notificationService = inject(NotificationService);
   private router = inject(Router);
 
   iconFor(type: NotificationPayload['type']): string {
@@ -82,11 +80,8 @@ export class NotificationToastComponent {
 
   onClick(toast: NotificationPayload): void {
     this.websocketService.removeToast(toast);
-    if (toast.id) {
-      this.notificationService.marquerLue(toast.id).subscribe();
-    }
     if (toast.dossierId) {
-      this.router.navigate(['/dossiers', toast.dossierId]);
+      this.router.navigate(['/dossiers']);
     }
   }
 }

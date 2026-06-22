@@ -1,4 +1,4 @@
-import { Injectable, inject, effect } from '@angular/core';
+import { Injectable, inject, effect, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { AppNotification } from '../models/notification.model';
@@ -16,34 +16,46 @@ export class NotificationService {
   private notificationsSubject = new BehaviorSubject<AppNotification[]>([]);
   notifications$ = this.notificationsSubject.asObservable();
 
+  // ← signal exposé, alimenté par 3 sources ci-dessous
+  unreadCount = signal<number>(0);
+
   constructor() {
-    // 1. Charger les notifications persistées de l'API pour l'utilisateur actuel
+    // Source 1 — chargement initial + refresh API
+    // Quand la liste change, on recalcule le compteur localement
+    this.notificationsSubject.subscribe(notifs => {
+      this.unreadCount.set(notifs.filter(n => !n.lue).length);
+    });
+
+    // Source 2 — compteur temps réel envoyé par le backend via WebSocket
+    // C'est la source la plus précise : elle prime sur le calcul local
+    this.websocketService.compteur$.subscribe(count => {
+      this.unreadCount.set(count);
+    });
+
+    // Source 3 — nouvelle notification reçue en temps réel
+    // On rafraîchit la liste complète (qui mettra à jour le compteur via Source 1)
+    this.websocketService.notification$.subscribe(() => {
+      if (this.authService.currentUser()) {
+        this.rafraichirNotifications();
+      }
+    });
+
+    // Chargement au démarrage dès que l'utilisateur est disponible
     effect(() => {
       const user = this.authService.currentUser();
       if (user) {
         this.rafraichirNotifications();
       } else {
         this.notificationsSubject.next([]);
+        this.unreadCount.set(0);
       }
-    });
-
-    // 2. Écouter les nouvelles notifications via le WebSocket et rafraîchir la liste
-    this.websocketService.notification$.subscribe(payload => {
-      const user = this.authService.currentUser();
-      if (!user) return;
-      
-      this.rafraichirNotifications();
     });
   }
 
-  rafraichirNotifications() {
+  rafraichirNotifications(): void {
     this.http.get<AppNotification[]>('/api/notifications').subscribe({
-      next: (notifs) => {
-        this.notificationsSubject.next(notifs);
-      },
-      error: (err) => {
-        console.error('Erreur de chargement des notifications:', err);
-      }
+      next: notifs => this.notificationsSubject.next(notifs),
+      error: err => console.error('Erreur notifications:', err)
     });
   }
 
@@ -59,11 +71,13 @@ export class NotificationService {
 
   marquerLue(id: number): Observable<{ nonLues: number }> {
     return this.http.put<{ nonLues: number }>(`/api/notifications/${id}/lire`, null).pipe(
-      tap(() => {
-        const updated = this.notificationsSubject.value.map(n => 
+      tap(res => {
+        const updated = this.notificationsSubject.value.map(n =>
           n.id === id ? { ...n, lue: true } : n
         );
         this.notificationsSubject.next(updated);
+        // Mise à jour optimiste immédiate du compteur
+        this.unreadCount.set(res.nonLues);
       })
     );
   }
@@ -73,6 +87,7 @@ export class NotificationService {
       tap(() => {
         const updated = this.notificationsSubject.value.map(n => ({ ...n, lue: true }));
         this.notificationsSubject.next(updated);
+        this.unreadCount.set(0);
       })
     );
   }

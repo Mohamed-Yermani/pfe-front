@@ -6,7 +6,6 @@ import { HeaderComponent } from '../../components/header/header.component';
 import { FooterComponent } from '../../components/footer/footer.component';
 import { NotificationToastComponent } from '../../components/notification-toast/notification-toast.component';
 
-
 @Component({
   selector: 'app-main-layout',
   standalone: true,
