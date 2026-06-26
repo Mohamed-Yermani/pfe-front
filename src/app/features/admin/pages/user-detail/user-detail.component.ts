@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UserService } from '../../../../core/services/user.service';
 import { ActivatedRoute } from '@angular/router';
-import { User } from '../../../../core/models/user.model';
+import { User, UserDto } from '../../../../core/models/user.model';
 import { switchMap, finalize, tap, of, catchError } from 'rxjs';
 
 @Component({
   selector: 'app-user-detail',
+  standalone: true,
   templateUrl: './user-detail.component.html',
   imports: [CommonModule, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,7 +18,7 @@ export class UserDetailComponent {
   private route = inject(ActivatedRoute);
   private userService = inject(UserService);
 
-  user = signal<User | null>(null);
+  user = signal<UserDto | null>(null);
   isLoading = signal(true);
   isUpdating = signal(false);
   loadError = signal<string | null>(null);
@@ -28,17 +29,19 @@ export class UserDetailComponent {
     this.route.paramMap.pipe(
       tap(() => this.isLoading.set(true)),
       switchMap(params => {
-          const id = params.get('id');
-          if (!id) {
-            this.loadError.set('User ID not found in URL.');
-            return of(null);
-          }
-          return this.userService.getUserById(id).pipe(
-            catchError(err => {
-              this.loadError.set('Failed to load user details. The user may not exist.');
-              return of(null);
-            })
-          );
+    const id = Number(params.get('id'));
+
+if (isNaN(id)) {
+  this.loadError.set('Invalid User ID');
+  return of(null);
+}
+
+return this.userService.getUserById(id).pipe(
+  catchError(() => {
+    this.loadError.set('Failed to load user details.');
+    return of(null);
+  })
+);
       }),
       finalize(() => this.isLoading.set(false))
     ).subscribe({

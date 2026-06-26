@@ -8,6 +8,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { DossierService } from '../../../core/services/dossier.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Dossier } from '../../../core/models/dossier.model';
+import { ActivatedRoute } from '@angular/router';
 
 @Pipe({
   name: 'safeUrl',
@@ -269,6 +270,8 @@ export class AllDossiersComponent implements OnInit {
   private dossierService = inject(DossierService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+ 
 
   dossiers = signal<Dossier[]>([]);
   previews = signal<Record<number, string>>({});
@@ -310,17 +313,47 @@ export class AllDossiersComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
-    this.loadDossiers();
-  }
+ ngOnInit() {
+  this.loadDossiers();
+}
 
   loadDossiers() {
     this.dossierService.getAllDossiers().subscribe({
       next: (dossiers) => {
-        this.dossiers.set(dossiers);
-        this.errorMessage.set('');
-        this.loadPreviews(dossiers);
-      },
+
+  this.dossiers.set(dossiers);
+  this.errorMessage.set('');
+  this.loadPreviews(dossiers);
+
+  const dossierId =
+    this.route.snapshot.queryParamMap.get('openPreview');
+
+  if (dossierId) {
+
+    const dossier = dossiers.find(
+      d => d.id === Number(dossierId)
+    );
+
+   if (dossier) {
+
+  setTimeout(() => {
+
+    this.openLightbox(dossier);
+
+    this.router.navigate(
+      [],
+      {
+        replaceUrl: true,
+        queryParams: {}
+      }
+    );
+
+  }, 300);
+
+}
+  }
+
+},
       error: (error: HttpErrorResponse) => {
         if (error.status === 401) {
           this.authService.logout();

@@ -77,18 +77,18 @@ export class HeaderComponent {
     this.isNotificationsOpen.set(false);
   }
 
-  onNotificationClick(notif: AppNotification): void {
-    if (!notif.lue) {
-      this.notificationService.marquerLue(notif.id).subscribe();
-    }
-    this.isNotificationsOpen.set(false);
-
-    if (notif.link) {
-      this.router.navigateByUrl(notif.link);
-    } else if (notif.dossierId) {
-      this.router.navigate(['/dossiers']);
-    }
+ onNotificationClick(notif: AppNotification): void {
+  if (!notif.lue) {
+    this.notificationService.marquerLue(notif.id).subscribe();
   }
+  this.closeAllPanels();
+
+  if (notif.dossierId) {
+    this.router.navigate(['/dossiers'], {
+      queryParams: { openPreview: notif.dossierId }
+    });
+  }
+}
 
   markAllAsRead(event: Event): void {
     event.stopPropagation();

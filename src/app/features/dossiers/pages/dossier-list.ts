@@ -8,6 +8,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { DossierService } from '../../../core/services/dossier.service';
 import { PieceService } from '../../../core/services/piece.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 import { AiVerificationFrontendService } from '../../../core/services/ai-verification.service';
 import { Dossier, AiVerificationResult, SectionDetail, PieceJustificative, RequiredPieceInfo, TypePiece } from '../../../core/models/dossier.model';
 
@@ -576,6 +577,7 @@ export class DossierListComponent implements OnInit {
   private authService: AuthService = inject(AuthService);
   private router: Router = inject(Router);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
+  private route = inject(ActivatedRoute);
 
   dossiers = signal<Dossier[]>([]);
 
@@ -787,20 +789,29 @@ export class DossierListComponent implements OnInit {
 
   loadDossiers() {
     this.dossierService.getUserDossiers().subscribe({
-      next: (dossiers: Dossier[]) => {
-        // Sort dossiers by most recent first (based on dateUpload desc, fallback to id desc)
-        const sorted = [...dossiers].sort((a, b) => {
-          const dateA = a.dateUpload ? new Date(a.dateUpload).getTime() : 0;
-          const dateB = b.dateUpload ? new Date(b.dateUpload).getTime() : 0;
-          if (dateA === dateB || isNaN(dateA) || isNaN(dateB)) {
-            return b.id - a.id;
-          }
-          return dateB - dateA;
-        });
-        this.dossiers.set(sorted);
-        this.errorMessage.set('');
-        this.loadPreviews(sorted);
-      },
+    next: (dossiers: Dossier[]) => {
+  const sorted = [...dossiers].sort((a, b) => {
+    const dateA = a.dateUpload ? new Date(a.dateUpload).getTime() : 0;
+    const dateB = b.dateUpload ? new Date(b.dateUpload).getTime() : 0;
+    if (dateA === dateB || isNaN(dateA) || isNaN(dateB)) return b.id - a.id;
+    return dateB - dateA;
+  });
+  this.dossiers.set(sorted);
+  this.errorMessage.set('');
+  this.loadPreviews(sorted);
+
+  // Ouverture automatique de la lightbox si query param présent
+  const dossierId = this.route.snapshot.queryParamMap.get('openPreview');
+  if (dossierId) {
+    const dossier = sorted.find(d => d.id === Number(dossierId));
+    if (dossier) {
+      setTimeout(() => {
+        this.openLightbox(dossier);
+        this.router.navigate([], { replaceUrl: true, queryParams: {} });
+      }, 300);
+    }
+  }
+},
       error: (error: HttpErrorResponse) => this.handleError(error, 'chargement des dossiers')
     });
   }

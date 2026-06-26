@@ -30,22 +30,21 @@ export class NotificationHistoryComponent {
     this.notificationService.marquerToutesLues().subscribe();
   }
 
- onNotificationClick(notif: AppNotification): void {
+onNotificationClick(notif: AppNotification): void {
   if (!notif.lue) {
     this.notificationService.marquerLue(notif.id).subscribe();
   }
+  this.closeAllPanels();
 
   if (notif.dossierId) {
-    this.router.navigate(
-      ['/dossiers'],
-      {
-        queryParams: {
-          dossierId: notif.dossierId
-        }
-      }
-    );
+    this.router.navigate(['/dossiers'], {
+      queryParams: { openPreview: notif.dossierId }
+    });
   }
 }
+  closeAllPanels() {
+    throw new Error('Method not implemented.');
+  }
   
 
   iconFor(type: AppNotification['type']): string {

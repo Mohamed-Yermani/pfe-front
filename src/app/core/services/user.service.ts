@@ -22,4 +22,10 @@ export class UserService {
   getUserByEmail(email: string): Observable<UserDto> {
     return this.http.get<UserDto>(`${this.apiUrl}/email/${email}`);
   }
+  toggleUserStatus(id: number, enabled: boolean): Observable<UserDto> {
+  return this.http.patch<UserDto>(
+    `${this.apiUrl}/${id}/status`,
+    { enabled }
+  );
+}
 }
