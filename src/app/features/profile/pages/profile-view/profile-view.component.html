@@ -1,44 +1,107 @@
-
 <h1 class="text-3xl font-semibold text-gray-800">My Profile</h1>
 <div class="mt-8 bg-white p-8 rounded-lg shadow-md">
     @if (user(); as currentUser) {
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <label class="text-gray-600 font-semibold">Prénom</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.prenom }}</p>
+
+        @if (successMessage()) {
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+                <p class="font-bold">Succès</p>
+                <p>{{ successMessage() }}</p>
             </div>
-            <div>
-                <label class="text-gray-600 font-semibold">Nom</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.nom }}</p>
+        }
+
+        @if (!isEditing()) {
+            <!-- ════════════ MODE AFFICHAGE ════════════ -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="text-gray-600 font-semibold">Prénom</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.prenom }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Nom</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.nom }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Email</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.email }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Numéro d'assuré</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.numeroAssure }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">CIN</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.cin }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Téléphone</label>
+                    <p class="mt-2 text-lg text-gray-800">{{ currentUser.telephone }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Rôles</label>
+                    <p class="mt-2 text-lg text-gray-800 capitalize">{{ getRoleDisplayNames(currentUser.roles) }}</p>
+                </div>
+                <div>
+                    <label class="text-gray-600 font-semibold">Status</label>
+                    <p class="mt-2 text-lg text-gray-800 capitalize">{{ currentUser.enabled ? 'Activé' : 'Désactivé' }}</p>
+                </div>
             </div>
-            <div>
-                <label class="text-gray-600 font-semibold">Email</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.email }}</p>
+            <div class="mt-8">
+                <!-- ✅ (click) au lieu de routerLink : bascule en inline -->
+                <button type="button" (click)="startEditing()" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                    Edit Profile
+                </button>
             </div>
-            <div>
-                <label class="text-gray-600 font-semibold">Numéro d'assuré</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.numeroAssure }}</p>
-            </div>
-            <div>
-                <label class="text-gray-600 font-semibold">CIN</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.cin }}</p>
-            </div>
-            <div>
-                <label class="text-gray-600 font-semibold">Téléphone</label>
-                <p class="mt-2 text-lg text-gray-800">{{ currentUser.telephone }}</p>
-            </div>
-            <div>
-                <label class="text-gray-600 font-semibold">Rôles</label>
-                <p class="mt-2 text-lg text-gray-800 capitalize">{{ getRoleDisplayNames(currentUser.roles) }}</p>
-            </div>
-             <div>
-                <label class="text-gray-600 font-semibold">Status</label>
-                <p class="mt-2 text-lg text-gray-800 capitalize">{{ currentUser.enabled ? 'Activé' : 'Désactivé' }}</p>
-            </div>
-        </div>
-        <div class="mt-8">
-            <a routerLink="/profile/edit" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Edit Profile</a>
-        </div>
+
+        } @else {
+            <!-- ════════════ MODE ÉDITION INLINE ════════════ -->
+            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+                <fieldset [disabled]="isLoading()">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="prenom" class="text-gray-700 font-semibold">Prénom</label>
+                            <input id="prenom" type="text" formControlName="prenom" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100">
+                        </div>
+                        <div>
+                            <label for="nom" class="text-gray-700 font-semibold">Nom</label>
+                            <input id="nom" type="text" formControlName="nom" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100">
+                        </div>
+                        <div>
+                            <label class="text-gray-700 font-semibold">Email</label>
+                            <p class="w-full mt-2 px-4 py-2 text-gray-500 bg-gray-100 border rounded-lg">{{ currentUser.email }}</p>
+                        </div>
+                        <div>
+                            <label for="telephone" class="text-gray-700 font-semibold">Téléphone</label>
+                            <input id="telephone" type="tel" formControlName="telephone" class="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100">
+                        </div>
+                    </div>
+
+                    @if (error()) {
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md my-4" role="alert">
+                            <span class="block sm:inline">{{ error() }}</span>
+                        </div>
+                    }
+
+                    <div class="flex justify-end mt-6">
+                        <!-- ✅ (click) au lieu de routerLink : annule sans navigation -->
+                        <button type="button" (click)="cancelEditing()" class="px-6 py-2 mr-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" [disabled]="profileForm.invalid || isLoading()" class="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed">
+                            @if (isLoading()) {
+                                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span>Saving...</span>
+                            } @else {
+                                <span>Save Changes</span>
+                            }
+                        </button>
+                    </div>
+                </fieldset>
+            </form>
+        }
+
     } @else {
         <p>Loading user profile...</p>
     }

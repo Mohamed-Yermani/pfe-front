@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { DossierService } from '../../../core/services/dossier.service';
 import { DossierStatistics } from '../../../core/models/dossier.model';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -9,7 +10,7 @@ import { NotificationService } from '../../../core/services/notification.service
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, MatIconModule, ReactiveFormsModule],
+  imports: [CommonModule, MatIconModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="space-y-8">
       <div>
@@ -242,26 +243,39 @@ import { NotificationService } from '../../../core/services/notification.service
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h2 class="text-lg font-semibold mb-4">Actions Rapides</h2>
           <div class="grid grid-cols-2 gap-4">
-            <button class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group">
+
+            <!-- ✅ Nouvel Agent : navigation vers la page de gestion des agents -->
+            <a routerLink="/admin/agents"
+               class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group block">
               <mat-icon class="text-indigo-600 mb-2">person_add</mat-icon>
               <div class="font-medium text-gray-900">Nouvel Agent</div>
               <div class="text-xs text-gray-500">Ajouter un collaborateur</div>
-            </button>
-            <button class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group">
+            </a>
+
+            <!-- ✅ Rapport Mensuel : export CSV côté client à partir des stats -->
+            <button (click)="exportMonthlyReport()"
+                    class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group">
               <mat-icon class="text-indigo-600 mb-2">assessment</mat-icon>
               <div class="font-medium text-gray-900">Rapport Mensuel</div>
               <div class="text-xs text-gray-500">Exporter les données</div>
             </button>
-            <button class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group">
+
+            <!-- ✅ Configuration : redirige vers le profil (en attendant une vraie page settings) -->
+            <a routerLink="/profile"
+               class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group block">
               <mat-icon class="text-indigo-600 mb-2">settings</mat-icon>
               <div class="font-medium text-gray-900">Configuration</div>
               <div class="text-xs text-gray-500">Paramètres système</div>
-            </button>
-            <button class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group">
+            </a>
+
+            <!-- ✅ Support : ouvre le client mail par défaut -->
+            <a href="mailto:mohamedyermani5@gmail.com?subject=Demande%20de%20support%20CNSS"
+               class="p-4 border border-gray-100 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 transition-all text-left group block">
               <mat-icon class="text-indigo-600 mb-2">help_outline</mat-icon>
               <div class="font-medium text-gray-900">Support</div>
               <div class="text-xs text-gray-500">Aide et documentation</div>
-            </button>
+            </a>
+
           </div>
         </div>
       </div>
@@ -334,5 +348,36 @@ export class AdminDashboardComponent implements OnInit {
     if (!stats || stats.total === 0) return 0;
     const value = stats[type];
     return (typeof value === 'number' ? value : 0) / stats.total * 100;
+  }
+
+  // ✅ Génère et télécharge un rapport CSV simple à partir des statistiques déjà chargées
+  exportMonthlyReport() {
+    const stats = this.stats();
+    if (!stats) {
+      alert('Les statistiques ne sont pas encore chargées. Veuillez réessayer dans un instant.');
+      return;
+    }
+
+    const rows = [
+      ['Indicateur', 'Valeur'],
+      ['Total dossiers', stats.total],
+      ['En attente', stats.enAttente],
+      ['Validation locale', stats.validationLocale],
+      ['Validés', stats.valides],
+      ['Refusés', stats.refuses],
+      ['Score IA moyen (%)', stats.avgAiScore]
+    ];
+
+    const csvContent = rows.map(r => r.join(',')).join('\n');
+    // ✅ \uFEFF (BOM) pour que Excel affiche correctement les accents en UTF-8
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `rapport_cnss_${dateStr}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 }

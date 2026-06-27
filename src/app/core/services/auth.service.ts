@@ -56,11 +56,17 @@ export class AuthService {
     }
   }
 
-  loadCurrentUser(): Observable<UserDto> {
-    return this.http.get<UserDto>('/api/auth/me').pipe(
-        tap(user => this.setCurrentUser(user))
-    );
-  }
+ loadCurrentUser(): Observable<UserDto> {
+  return this.http.get<UserDto>('/api/auth/me').pipe(
+      tap(user => this.setCurrentUser(user))
+  );
+}
+
+// ✅ Permet aux autres composants de mettre à jour l'utilisateur courant
+// (ex: après modification du profil) sans dupliquer la logique de localStorage
+updateCurrentUserState(user: UserDto): void {
+  this.setCurrentUser(user);
+}
 
   private setAuthState(response: AuthResponse): void {
     this.#token.set(response.token);

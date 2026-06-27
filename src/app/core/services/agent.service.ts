@@ -1,4 +1,3 @@
-
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -9,8 +8,12 @@ export class AgentService {
   private http = inject(HttpClient);
   private apiUrl = '/api/admin/agents';
 
-  createAgent(request: CreateAgentRequest): Observable<UserDto> {
-    return this.http.post<UserDto>(`${this.apiUrl}/create`, request);
+  createAgent(payload: any, agentType: string): Observable<any> {
+    // ✅ agentType en query param ET role dans le body
+    return this.http.post(
+      `${this.apiUrl}/create?agentType=${agentType}`,
+      payload
+    );
   }
 
   getAgentById(id: number): Observable<UserDto> {
@@ -36,6 +39,6 @@ export class AgentService {
   reactivateAgent(id: number): Observable<UserDto> {
     return this.http.patch<UserDto>(`${this.apiUrl}/${id}/reactivate`, {});
   }
-  
+
   // changeAgentPassword non implémenté pour l'instant
 }

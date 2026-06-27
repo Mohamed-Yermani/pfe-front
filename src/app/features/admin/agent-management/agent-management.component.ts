@@ -92,6 +92,13 @@ import { User } from '../../../core/models/user.model';
             </button>
           </div>
 
+          @if (errorMessage()) {
+            <div class="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm font-medium flex items-center gap-2">
+              <mat-icon class="!w-5 !h-5 text-rose-600">error_outline</mat-icon>
+              {{ errorMessage() }}
+            </div>
+          }
+
           <form [formGroup]="agentForm" (ngSubmit)="onSubmit()" class="grid grid-cols-1 md:grid-cols-2 gap-5">
             
             <!-- Nom -->
@@ -167,8 +174,9 @@ import { User } from '../../../core/models/user.model';
                 <input formControlName="telephone" type="text" placeholder="ex. +212600000000" 
                        class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-950 focus:border-blue-950 outline-none transition-all text-sm font-medium text-gray-900">
               </div>
+              <span class="text-xs text-gray-500 block font-medium">Format attendu : chiffres uniquement (8 à 15), avec ou sans + initial. Pas d'espaces ni de tirets.</span>
               @if (agentForm.get('telephone')?.invalid && agentForm.get('telephone')?.touched) {
-                <span class="text-xs text-red-600 font-medium block">Le numéro de téléphone est obligatoire.</span>
+                <span class="text-xs text-red-600 font-medium block">Le numéro de téléphone est obligatoire et doit être au format valide (ex. +212600000000).</span>
               }
             </div>
 
@@ -199,7 +207,7 @@ import { User } from '../../../core/models/user.model';
                 <span class="text-xs text-gray-500 block font-medium">Exigence de sécurité : au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.</span>
                 @if (agentForm.get('password')?.invalid && agentForm.get('password')?.touched) {
                   <span class="text-xs text-red-600 font-medium block">
-                    Mot de passe requis et doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial (@$!%*?&).
+                    Mot de passe requis et doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.
                   </span>
                 }
               </div>
@@ -392,6 +400,10 @@ export class AgentManagementComponent implements OnInit {
   searchQuery = signal<string>('');
   showAddForm = signal(false);
   editingAgent = signal<any | null>(null);
+  errorMessage = signal<string>('');
+
+  // ✅ Regex alignée avec le backend (@Pattern sur telephone)
+  private readonly TELEPHONE_PATTERN = /^\+?[0-9]{8,15}$/;
 
   getFormTitle() {
     return this.editingAgent() ? "Modification du Profil de l'Agent" : "Enregistrement d'un Nouvel Agent";
@@ -458,9 +470,10 @@ export class AgentManagementComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     cin: ['', Validators.required],
     numeroAssure: ['', Validators.required],
-    telephone: ['', Validators.required],
+    // ✅ Pattern alignée avec le backend dès le formulaire
+    telephone: ['', [Validators.required, Validators.pattern(this.TELEPHONE_PATTERN)]],
     password: [''],
-    role: ['ROLE_AGENT_CNSS', Validators.required]
+    role: ['', Validators.required]
   });
 
   ngOnInit() {
@@ -480,9 +493,20 @@ export class AgentManagementComponent implements OnInit {
 
   openAddForm() {
     this.editingAgent.set(null);
-    this.agentForm.reset({
-      role: 'ROLE_AGENT_CNSS'
+    this.errorMessage.set('');
+
+    // ✅ setValue() explicite plutôt que reset() pour le select
+    this.agentForm.setValue({
+      nom: '',
+      prenom: '',
+      email: '',
+      cin: '',
+      numeroAssure: '',
+      telephone: '',
+      password: '',
+      role: 'ROLE_AGENT_CNSS'   // ← valeur initiale explicite
     });
+
     this.agentForm.get('password')?.setValidators([
       Validators.required,
       Validators.minLength(8),
@@ -490,46 +514,86 @@ export class AgentManagementComponent implements OnInit {
       Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
     ]);
     this.agentForm.get('password')?.updateValueAndValidity();
+
+    this.agentForm.get('telephone')?.setValidators([
+      Validators.required,
+      Validators.pattern(this.TELEPHONE_PATTERN)
+    ]);
+    this.agentForm.get('telephone')?.updateValueAndValidity();
+
     this.showAddForm.set(true);
+  }
+
+  // ✅ Nettoie le téléphone (retire espaces / tirets / points) avant envoi
+  private sanitizePhone(value: string | null | undefined): string {
+    if (!value) return '';
+    return value.replace(/[\s.-]/g, '');
   }
 
   onSubmit() {
     if (this.agentForm.invalid) return;
+    this.errorMessage.set('');
 
-    const formValue = this.agentForm.value;
+    const formValue = this.agentForm.getRawValue();
     const agentId = this.editingAgent()?.id;
+    const cleanedTelephone = this.sanitizePhone(formValue.telephone);
 
     if (agentId) {
-      // Modifying agent
-      this.agentService.updateAgent(Number(agentId), formValue as any).subscribe({
-        next: () => {
-          this.loadAgents();
-          this.cancelEdit();
-        },
+      // ✅ Payload propre pour update : pas de champ "password" envoyé inutilement,
+      // téléphone nettoyé pour respecter le @Pattern backend
+      const updatePayload = {
+        nom: formValue.nom,
+        prenom: formValue.prenom,
+        email: formValue.email,
+        cin: formValue.cin,
+        numeroAssure: formValue.numeroAssure,
+        telephone: cleanedTelephone,
+        role: formValue.role
+      };
+
+      console.log('▶ updatePayload:', updatePayload);
+
+      this.agentService.updateAgent(Number(agentId), updatePayload as any).subscribe({
+        next: () => { this.loadAgents(); this.cancelEdit(); },
         error: (err: any) => {
-          console.error('Erreur lors de la mise à jour de l\'agent:', err);
+          console.error('Erreur update:', err);
+          console.error('Détail backend:', err.error);
+          this.errorMessage.set(this.extractErrorMessage(err));
         }
       });
     } else {
-      // Creating agent
-      const { role, ...agentData } = formValue;
-      let agentType = 'CNSS';
-      if (role === 'ROLE_AGENT_BUREAU') agentType = 'BUREAU';
-      else if (role === 'ROLE_AGENT_DIRECTION') agentType = 'DIRECTION';
-      else if (role === 'ROLE_ADMIN') agentType = 'ADMIN';
+      const roleToAgentType: Record<string, string> = {
+        'ROLE_AGENT_CNSS':      'CNSS',
+        'ROLE_AGENT_BUREAU':    'BUREAU',
+        'ROLE_AGENT_DIRECTION': 'DIRECTION',
+        'ROLE_ADMIN':           'ADMIN'
+      };
 
-      const service = this.agentService as any;
-      const requestPayload = { ...agentData, role };
-      // Always pass agentType to align with backend controller expectations
-      const createObservable = service.createAgent(requestPayload, agentType);
+      const selectedRole = formValue.role ?? 'ROLE_AGENT_CNSS';
+      const agentType = roleToAgentType[selectedRole] ?? 'CNSS';
 
-      createObservable.subscribe({
-        next: () => {
-          this.loadAgents();
-          this.cancelEdit();
-        },
+      // ✅ role inclus dans le body + agentType dans l'URL + téléphone nettoyé
+      const createPayload = {
+        nom:          formValue.nom,
+        prenom:       formValue.prenom,
+        email:        formValue.email,
+        cin:          formValue.cin,
+        numeroAssure: formValue.numeroAssure,
+        telephone:    cleanedTelephone,
+        password:     formValue.password,
+        role:         selectedRole
+      };
+
+      console.log('▶ selectedRole:', selectedRole);
+      console.log('▶ agentType:', agentType);
+      console.log('▶ payload:', createPayload);
+
+      this.agentService.createAgent(createPayload, agentType).subscribe({
+        next: () => { this.loadAgents(); this.cancelEdit(); },
         error: (err: any) => {
-          console.error('Erreur lors de la création de l\'agent:', err);
+          console.error('Erreur création:', err);
+          console.error('Détail backend:', err.error);
+          this.errorMessage.set(this.extractErrorMessage(err));
         }
       });
     }
@@ -538,6 +602,7 @@ export class AgentManagementComponent implements OnInit {
   editAgent(agent: any) {
     this.editingAgent.set(agent);
     this.showAddForm.set(true);
+    this.errorMessage.set('');
 
     let determinedRole = 'ROLE_AGENT_CNSS';
     const roles = this.getAgentRoles(agent);
@@ -557,13 +622,22 @@ export class AgentManagementComponent implements OnInit {
       role: determinedRole
     });
 
+    // En modification : pas de mot de passe requis
     this.agentForm.get('password')?.clearValidators();
     this.agentForm.get('password')?.updateValueAndValidity();
+
+    // ✅ Le téléphone reste requis + pattern, même en modification
+    this.agentForm.get('telephone')?.setValidators([
+      Validators.required,
+      Validators.pattern(this.TELEPHONE_PATTERN)
+    ]);
+    this.agentForm.get('telephone')?.updateValueAndValidity();
   }
 
   cancelEdit() {
     this.showAddForm.set(false);
     this.editingAgent.set(null);
+    this.errorMessage.set('');
     this.agentForm.reset({ role: 'ROLE_AGENT_CNSS' });
   }
 
@@ -584,5 +658,26 @@ export class AgentManagementComponent implements OnInit {
 
   onSearch(value: string) {
     this.searchQuery.set(value);
+  }
+
+  // ✅ Extrait un message d'erreur lisible depuis la réponse backend
+  private extractErrorMessage(err: any): string {
+    const body = err?.error;
+    if (!body) return "Une erreur est survenue lors de l'enregistrement.";
+
+    if (typeof body === 'string') return body;
+    if (body.message) return body.message;
+
+    // Cas Spring validation: { errors: [{ field, message }, ...] } ou { fieldErrors: {...} }
+    if (Array.isArray(body.errors)) {
+      return body.errors.map((e: any) => e.message || `${e.field}: invalide`).join(' / ');
+    }
+    if (body.fieldErrors) {
+      return Object.entries(body.fieldErrors)
+        .map(([field, msg]) => `${field}: ${msg}`)
+        .join(' / ');
+    }
+
+    return "Une erreur est survenue lors de l'enregistrement. Vérifiez les champs du formulaire.";
   }
 }
